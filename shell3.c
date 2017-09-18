@@ -63,8 +63,11 @@ void eval(char *cmdline) {
     if (!builtin_command(argv)) {           //todo:  made a logic change, I think it was reversed before
        // argv[0][strcspn(argv[0], "\n")] = 0;                //remove trailing new line; NOTE - only works on 1st argument
 
+        int input = redirectionInput(argv);
+        int outPut = redirectionOutput;
+        int outPutAppend = redirectionOutputAppend(argv);
 
-        if ((pid = fork()) == 0) {                                   //Child runs user job
+        if ((pid = fork()) == 0) {                                   //Child runs user job            
 
             if (execve(argv[0], argv, 0) < 0) {
                 write(1, "Command not found.\n", 20);
@@ -86,8 +89,11 @@ void eval(char *cmdline) {
         }
     }
 
+    close(redirectionInput);
+    close(redirectionOutput);
+    close(redirectionOutputAppend);
 
-    return;
+
 }
 
 
@@ -153,6 +159,8 @@ int parseline(char *buf, char **argv) {
 
 
 /* If first arg is builtin command, run it and return true */
+//Ignores other command line arguments
+
 int builtin_command(char **argv) {
     if (strcmp(argv[0], "exit") == 0) {
         write(1, "bye", 3);  //todo:  discuss message for shell shutdown

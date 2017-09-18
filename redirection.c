@@ -84,7 +84,7 @@ int checkRedirection(char * buf) {
 // }
 
 
-int redirectionOutput(char*argv[]) {
+int redirectionInput(char*argv[]) {
 
     int i = 0;
     int count = 0;
@@ -95,7 +95,7 @@ int redirectionOutput(char*argv[]) {
 
     while (argv[i] != NULL) {
 
-        if (strcmp(argv[i], ">") == 0) {  //look for the redirection symbol
+        if (strcmp(argv[i], "<") == 0) {  //look for the redirection symbol
             count++;
             if (argv[i + 1] != NULL) { //check to see if there is text after the redirect
                 flag = 1;
@@ -132,10 +132,11 @@ int redirectionOutput(char*argv[]) {
 
     close(file);
     return 1; //success
+
 }
 
 
-int redirectionInput(char * argv[]) {
+int redirectionOutput(char * argv[]) {
     int i = 0;
     int count = 0;
     int flag = 0;
@@ -145,7 +146,7 @@ int redirectionInput(char * argv[]) {
 
     while (argv[i] != NULL) {
 
-        if (strcmp(argv[i], "<") == 0) {  //look for the redirection symbol
+        if (strcmp(argv[i], ">") == 0) {  //look for the redirection symbol
             count++;
 
             if (i > 0) { //check to see if there is text before the redirect
@@ -184,7 +185,7 @@ int redirectionInput(char * argv[]) {
         dup2(fd, 1); //setting input to the file
     }
 
-    close(file);
+    close(fd);
     return 1;
 }
 
