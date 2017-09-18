@@ -70,12 +70,14 @@ void evaluteInput(char *cmdline){
      int background;          //should the job run in the foreground or background?
      pid_t pid;               //process ID
 
+     memset(buf, 0, sizeof(buf));  //clearing buffer of input
+
      strcpy(buf, cmdline);
      background = parseline(buf, argv);
 
      if (argv[0] == NULL)
           return;               //Ignore empty lines
-     if (argv[0] == '>'){
+     if (*argv[0] == '>'){
      	write(2, "Redirection error\n", 18);
      }
 
@@ -83,11 +85,6 @@ void evaluteInput(char *cmdline){
      if (!builtin_command(argv)){
 
           if ((pid = fork()) == 0){                         //Child runs user job
-
-          		for (int i = 0; argv[i]; i++){
-          			if ()
-          		}
-
 
                 if (execve(argv[0], argv, NULL) < 0){
                     write(1, "Command not found.", 19);
@@ -113,50 +110,100 @@ void evaluteInput(char *cmdline){
 }
 
 
+int checkRedirection(char * buf) {
+
+     //todo: get more specific with this. I was thinking either (A) return the count of redirect operators and go from there 
+     //or (B) return a specific flag number that corresponds to different situations
+     //e.g. if (just input redirection) {return 1}, else if (input and output redirect){return 2} etc. etc.
+     //might also be a good idea to use constants e.g. INPUT_AND_OUTPUT = 3
+
+
+    int i = 0;
+    int redirectionOp = 0;
+
+    for (int i = 0; i < strlen(buf); i++){
+     if (buf[i] == '>' || buf[i] == '<')
+          return 1;
+    }
+    return 0;
+}
+
+// int isOperator(char * c){
+//      if (c[0] == '<')
+//           return 1;
+//      else if (c[0] == '>'){
+//           if (c[1] == '>')
+//                return 2;
+//           return 1;
+//      }
+
+//      return 0;
+// }
+
+
+
 /* Parse the command line and build the argv array */
 
-int parseline(char *buf, char **argv){
+int parseline(char *buf, char **argv) {
 
-     char *delim;          //points to first space delimiter
-     int argc;          //number of args
-     int background;          //is it a background job?
+    char *delim;          //points to first space delimiter
+    int argc;          
+    int background;
+    char spacedBuf[MAXLINE + 4];        //Room for whole line + 2 spaces (assuming two redirects max)
+    int spacedBufPosition = 0;
 
-     buf[strlen(buf) - 1] = ' ';     //replace trailing '\n' with space -> used at end to test if buf is empty
+    if (checkRedirection(buf)){
+        for (int i = 0; i < strlen(buf); i++){
+            if (buf[i] == '<'){
+                spacedBuf[spacedBufPosition++] = ' ';
+                spacedBuf[spacedBufPosition++] = buf[i];
+                spacedBuf[spacedBufPosition++] = ' ';
+            }
+            else if(buf[i] == '>'){
+                spacedBuf[spacedBufPosition++] = ' ';
+                spacedBuf[spacedBufPosition++] = buf[i];
 
-     while(*buf && (*buf == ' '))     //ignore leading spaces
-          buf++;
+                if (buf[i+1] == '>')                                         //for double >>
+                    spacedBuf[spacedBufPosition++] = buf[i+1];
 
-     /* Build the argv list */
+                spacedBuf[spacedBufPosition++] = ' ';
+            }
+            else{
+                spacedBuf[spacedBufPosition++] = buf[i];
+            }
+        }
 
-     argc = 0;
+        buf = spacedBuf;
+    }        
 
-      while ((delim = strchr(buf, ' ')) || (delim = strchr(buf, '<')) || (delim = strchr(buf, '>')) || (delim = strpbrk(buf, ">>"))){     //while there is another ' ' in buf, aka buf is not empty
-     	if (delim[0] == '<' || delim[0] == '>' || delim[0] == ">>"){
-     		argv[argc++] = delim[0];
-     		argv[argc] = buf[strchr(buf, ' ') - buf];
-     		buf = strchr(buf, ' ') + 1;
-     		continue;
-     	}
-          argv[argc++] = buf;
-          *delim = '\0';
-          buf = delim + 1;
+    buf[strlen(buf) - 1] = ' ';     //replace trailing '\n' with space -> used at end to test if buf is empty
 
-          while (*buf && (*buf == ' '))     //Ignore spaces
-               buf++;
-     }
+    while (*buf && (*buf == ' '))     //ignore leading spaces
+        buf++;
 
-     argv[argc] = NULL;
 
-     if (argc == 0)     //Ignore blank line
-          return 1;
+    /* Build the argv list */
+    argc = 0;
+    while ((delim = strchr(buf, ' '))) {        //while there is another ' ' in buf, aka buf is not empty
+        *delim = '\0';
+        argv[argc++] = buf;
+        printf("%s\n", argv[argc-1]);
+        buf = delim + 1;
+        while (*buf && (*buf == ' '))     //Ignore spaces
+            buf++;
+    }
 
-     /* Should the job run in the background? */
+    argv[argc] = NULL;
+    if (argc == 0)     //Ignore blank line
+        return 1;
 
-     if ((background = (*argv[argc - 1] == '&')) != 0)
-          argv[--argc] = NULL;
+    if ((background = (*argv[argc - 1] == '&')) != 0)
+        argv[--argc] = NULL;
 
-     return background;
+    return background;
 }
+
+
 
 
 int listFiles (char * argument){

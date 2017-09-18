@@ -1,4 +1,5 @@
 #include "shell.h"
+#include "redirection.h"
 #include "builtin_commands.h"
 
 
