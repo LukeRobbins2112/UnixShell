@@ -11,6 +11,11 @@
 #define MAXARGS 128
 #define		LINE_LEN	256
 
+
+int inputRedirect = 0;
+int outputRedirectSingle = 0;
+int outputRedirectDouble = 0;
+
 /* Function Prototypes */
 
 void evaluteInput(char * cmdline);
@@ -70,11 +75,21 @@ void evaluteInput(char *cmdline){
 
      if (argv[0] == NULL)
           return;               //Ignore empty lines
+     if (argv[0] == '>'){
+     	write(2, "Redirection error\n", 18);
+     }
+
 
      if (!builtin_command(argv)){
 
           if ((pid = fork()) == 0){                         //Child runs user job
-               if (execve(argv[0], argv, NULL) < 0){
+
+          		for (int i = 0; argv[i]; i++){
+          			if ()
+          		}
+
+
+                if (execve(argv[0], argv, NULL) < 0){
                     write(1, "Command not found.", 19);
                     exit(0);
                }
@@ -85,12 +100,12 @@ void evaluteInput(char *cmdline){
           if (!background){
                int status;
                if (waitpid(pid, &status, 0) < 0)
-                    write(1, "waitfg: waitpid error\n", 22);
+                    write(1, "waitpid error\n", 22);
           }
           else{
           		write(1, pid, sizeof(pid));
           		write(1, " ", 1);
-          		write(1, cmdline, sizeof(cmdline));
+          		write(1, cmdline, strlen(cmdline));
           }
      }
 
@@ -115,7 +130,13 @@ int parseline(char *buf, char **argv){
 
      argc = 0;
 
-     while ((delim = strchr(buf, ' '))){     //while there is another ' ' in buf, aka buf is not empty
+      while ((delim = strchr(buf, ' ')) || (delim = strchr(buf, '<')) || (delim = strchr(buf, '>')) || (delim = strpbrk(buf, ">>"))){     //while there is another ' ' in buf, aka buf is not empty
+     	if (delim[0] == '<' || delim[0] == '>' || delim[0] == ">>"){
+     		argv[argc++] = delim[0];
+     		argv[argc] = buf[strchr(buf, ' ') - buf];
+     		buf = strchr(buf, ' ') + 1;
+     		continue;
+     	}
           argv[argc++] = buf;
           *delim = '\0';
           buf = delim + 1;

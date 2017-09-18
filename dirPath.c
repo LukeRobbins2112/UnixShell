@@ -12,7 +12,7 @@
 
 struct	DirEntryName
 {
-  char*			name_;
+  char*	name_;
   struct DirEntryName*	nextPtr_;
 };
 

@@ -107,7 +107,9 @@ void eval(char *cmdline) {
     int background;        //should the job run in the foreground or background?
     pid_t pid;               //process ID
     strcpy(buf, cmdline);
+
     background = parseline(buf, argv);
+
     if (argv[0] == NULL)
         return;               //Ignore empty lines
     //todo:  maybe move this checkRedirection call
@@ -140,14 +142,19 @@ void eval(char *cmdline) {
 /* Parse the command line and build the argv array */
 
 int parseline(char *buf, char **argv) {
+
         char *delim;          //points to first space delimiter
         int argc;          //number of args
         int background;          //is it a background job?
         buf[strlen(buf) - 1] = ' '; //replace trailing '\n' with space -> used at end to test if buf is empty
+
         while (*buf && (*buf == ' '))     //ignore leading spaces
             buf++;
+        
         /* Build the argv list */
+
         argc = 0;
+
         while ((delim = strchr(buf, ' '))) { //while there is another ' ' in buf, aka buf is not empty
             argv[argc++] = buf;
             *delim = '\0';
