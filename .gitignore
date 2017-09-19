@@ -1,0 +1,5 @@
+*.o
+.DS_Store
+TestFolder/testProgram
+shell3
+shell_1

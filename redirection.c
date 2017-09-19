@@ -130,8 +130,8 @@ int redirectionInput(char*argv[]) {
         dup2(fd, 0); //setting input to the file
     }
 
-    close(file);
-    return 1; //success
+    //close(file);
+    return fd; //success
 
 }
 
@@ -185,8 +185,8 @@ int redirectionOutput(char * argv[]) {
         dup2(fd, 1); //setting input to the file
     }
 
-    close(fd);
-    return 1;
+    //close(fd);
+    return fd;
 }
 
 
@@ -241,6 +241,8 @@ int redirectionOutputAppend(char * argv[]) {
         dup2(fd, 1); //setting input to the file
     }
 
-    close(file);
-    return 1;
+    //close(file);
+    return fd;
 }
+
+

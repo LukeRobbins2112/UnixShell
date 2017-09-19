@@ -49,7 +49,8 @@ char* getInput(char input[]) {
 void eval(char *cmdline) {
 
     char *argv[MAXARGS];     //argument list execve()
-    char buf[MAXLINE + 4];     
+    char buf[MAXLINE + 4];  
+    int fds[3];   
     int background;        
     pid_t pid;       
 
@@ -61,11 +62,11 @@ void eval(char *cmdline) {
     
 
     if (!builtin_command(argv)) {           //todo:  made a logic change, I think it was reversed before
-       // argv[0][strcspn(argv[0], "\n")] = 0;                //remove trailing new line; NOTE - only works on 1st argument
+        argv[0][strcspn(argv[0], "\n")] = 0;                //remove trailing new line; NOTE - only works on 1st argument
 
-        int input = redirectionInput(argv);
-        int outPut = redirectionOutput;
-        int outPutAppend = redirectionOutputAppend(argv);
+        fds[0] = redirectionInput(argv);
+        fds[1] = redirectionOutput(argv);
+        fds[2] = redirectionOutputAppend(argv);
 
         if ((pid = fork()) == 0) {                                   //Child runs user job            
 
@@ -87,11 +88,14 @@ void eval(char *cmdline) {
             write(1, " ", 1);
             write(1, cmdline, strlen(cmdline));
         }
+
+        for (int i = 0; i < 3; i++){
+            if (fds[i] > 0)
+                close(fds[i]);
+        }
     }
 
-    close(redirectionInput);
-    close(redirectionOutput);
-    close(redirectionOutputAppend);
+    
 
 
 }
