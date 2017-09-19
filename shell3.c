@@ -93,10 +93,10 @@ void eval(char *cmdline) {
             write(1, cmdline, strlen(cmdline));
         }
 
-        // for (int i = 0; i < 3; i++){
-        //     if (fds[i] > 0)
-        //         close(fds[i]);
-        // }
+        for (int i = 0; i < 3; i++){
+            if (fds[i] > 0)
+                close(fds[i]);
+        }
     }
 
     

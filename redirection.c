@@ -155,7 +155,7 @@ int redirectionOutput(char * argv[]) {
         dup2(fd, 1); //sending output to the file
     }
 
-    close(fd);
+    //close(fd);
     return fd;
 }
 
