@@ -3,15 +3,6 @@
 #include "builtin_commands.h"
 
 
-void eval(char * cmdline);
-int parseline(char *buf, char **argv);
-int buildin_command(char **argv);
-int listFiles(char * argument);
-void ls();
-char* getInput(char input[]);
-void cd(char ** tokens);
-int checkRedirection(char ** argv);
-
 
 
 int main() {
@@ -62,13 +53,26 @@ void eval(char *cmdline) {
     
 
     if (!builtin_command(argv)) {           //todo:  made a logic change, I think it was reversed before
-        argv[0][strcspn(argv[0], "\n")] = 0;                //remove trailing new line; NOTE - only works on 1st argument
 
+        
         fds[0] = redirectionInput(argv);
         fds[1] = redirectionOutput(argv);
         fds[2] = redirectionOutputAppend(argv);
 
-        if ((pid = fork()) == 0) {                                   //Child runs user job            
+
+
+        if ((pid = fork()) < 0){
+            write(1, "Process creation failed\n", 24);
+        }
+
+        if (pid == 0) {                                   //Child runs user job            
+
+            argv[0][strcspn(argv[0], "\n")] = 0;                //remove trailing new line; NOTE - only works on 1st argument
+            
+                printf("New argument list: \n");
+                for (int i = 0; argv[i]; i++){
+                    printf("%s\n", argv[i]);
+                }
 
             if (execve(argv[0], argv, 0) < 0) {
                 write(1, "Command not found.\n", 20);
@@ -89,10 +93,10 @@ void eval(char *cmdline) {
             write(1, cmdline, strlen(cmdline));
         }
 
-        for (int i = 0; i < 3; i++){
-            if (fds[i] > 0)
-                close(fds[i]);
-        }
+        // for (int i = 0; i < 3; i++){
+        //     if (fds[i] > 0)
+        //         close(fds[i]);
+        // }
     }
 
     
@@ -109,6 +113,9 @@ int parseline(char *buf, char **argv) {
     int background;
     char spacedBuf[MAXLINE + 4];        //Room for whole line + 2 spaces (assuming two redirects max)
     int spacedBufPosition = 0;
+
+
+    //Creating a buffer that adds spaces around redirection to ensure proper parsing
 
     if (checkRedirection(buf)){
         for (int i = 0; i < strlen(buf); i++){
@@ -145,6 +152,9 @@ int parseline(char *buf, char **argv) {
     while ((delim = strchr(buf, ' '))) {        //while there is another ' ' in buf, aka buf is not empty
         *delim = '\0';
         argv[argc++] = buf;
+
+       // printf("%s\n", argv[argc-1]);       //printfs out argv element by element, for debugging
+        
         buf = delim + 1;
         while (*buf && (*buf == ' '))     //Ignore spaces
             buf++;

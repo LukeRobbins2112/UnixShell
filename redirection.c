@@ -4,6 +4,224 @@
 
 
 
+
+int checkRedirection(char * buf) {
+
+	//todo: get more specific with this. I was thinking either (A) return the count of redirect operators and go from there 
+	//or (B) return a specific flag number that corresponds to different situations
+	//e.g. if (just input redirection) {return 1}, else if (input and output redirect){return 2} etc. etc.
+	//might also be a good idea to use constants e.g. INPUT_AND_OUTPUT = 3
+
+
+    int i = 0;
+    int redirectionOp = 0;
+
+    for (int i = 0; i < strlen(buf); i++){
+    	if (buf[i] == '>' || buf[i] == '<')
+    		return 1;
+    }
+    return 0;
+}
+
+// int isOperator(char * c){
+// 	if (c[0] == '<')
+// 		return 1;
+// 	else if (c[0] == '>'){
+// 		if (c[1] == '>')
+// 			return 2;
+// 		return 1;
+// 	}
+
+// 	return 0;
+// }
+
+
+int redirectionInput(char*argv[]) {
+
+    int i = 0;
+    int count = 0;
+    int flag = 0;
+    char * file;
+    char* msg = "You cannot have more than 1 redirection symbol here\n";
+    char* msg2 = "There needs to be an input file\n";
+
+    while (argv[i] != NULL) {
+
+        if (strcmp(argv[i], "<") == 0) {  //look for the redirection symbol
+            count++;
+            if (argv[i + 1] != NULL) { //check to see if there is text after the redirect
+                flag = 1;
+                file = argv[i + 1];  //copy the name of the file
+
+                for (; (argv[i] + 2) != NULL; i++){		//remove [redirects + input files] from argv as they arise, so execve args are correct
+                	argv[i] = argv[i+2];
+                }
+                argv[i] = NULL;
+            }
+            else{
+            	write(1, "no input file specified\n", 24);
+            	exit(1);
+            }
+
+            if (i == 0){
+
+            }
+        }
+        i++;
+    }
+
+    if (count == 0)  //no redirection, exit method
+            {
+        return 0;
+    }
+    if (count > 1)   //more than one redirection symbol
+            {
+        write(1, msg, strlen(msg));
+        return -1;
+    }
+    if (flag == 0)  //no input file provided
+            {
+        write(1, msg2, strlen(msg2));
+        return -1;
+    }
+
+    //attempt file redirection
+    int fd = open(file, O_RDONLY);
+    char * errmsg = "error opening file";
+    if (fd < 0) {
+        write(1, errmsg, strlen(errmsg));
+        return -1;
+    } else {
+        dup2(fd, 0); //setting input to the file
+    }
+
+    //close(fd);
+    return fd; //success
+
+}
+
+
+int redirectionOutput(char * argv[]) {
+    int i = 0;
+    int count = 0;
+    int flag = 0;
+    char*file;
+    char* msg = "You cannot have more than 1 redirection symbol here\n";
+    char* msg2 = "There needs to be an output file\n";
+
+    while (argv[i] != NULL) {
+
+        if (strcmp(argv[i], ">") == 0) {  //look for the redirection symbol
+            count++;
+
+            if (i > 0 && argv[i+1]) { //check to see if there is text before the redirect, and a file to redirect output to
+                flag = 1;
+                file = argv[i + 1];  //copy the name of the file
+
+                printf("File name: %s\n", file);
+
+                for (; (argv[i+ 2]) != NULL; i++){		//remove [redirects + input files] from argv as they arise, so execve args are correct
+                	argv[i] = argv[i+2];
+                }
+                argv[i] = NULL;
+
+            }
+            else{
+            	write(1, "no file to output specified\n", 28);
+            	exit(1);
+            }
+        }
+
+        i++;
+    }
+    if (count == 0)  //no redirection, exit method
+            {
+        return 0;
+    }
+    if (count > 1)   //more than one redirection symbol
+            {
+        write(1, msg, strlen(msg));
+        return -1;
+    }
+    if (flag == 0)  //no input file provided
+            {
+        write(1, msg2, strlen(msg2));
+        return -1;
+    }
+
+    //attempt file redirection
+    int fd = open(file, O_WRONLY | O_TRUNC | O_CREAT, S_IRUSR | S_IRGRP | S_IWGRP | S_IWUSR);
+    char * errmsg = "error opening file";
+
+    if (fd < 0) {
+        write(1, errmsg, strlen(errmsg));
+        return -1;
+    } 
+    else {
+        dup2(fd, 1); //sending output to the file
+    }
+
+    close(fd);
+    return fd;
+}
+
+
+int redirectionOutputAppend(char * argv[]) {
+
+    int i = 0;
+    int count = 0;
+    int flag = 0;
+    char*file;
+    char* msg = "You cannot have more than 1 redirection symbol here\n";
+    char* msg2 = "There needs to be an output file\n";
+
+    while (argv[i] != NULL) {
+
+        if (strcmp(argv[i], ">>") == 0) {  //look for the redirection symbol
+            count++;
+
+            if (i > 0 && argv[i+1]) { //check to see if there is text before the redirect, and a file to redirect output to
+                flag = 1;
+                file = argv[i + 1];  //copy the name of the file
+            }
+        }
+
+        i++;
+    }
+
+    if (count == 0)  //no redirection, exit method
+            {
+        return 0;
+    }
+
+    if (count > 1)   //more than one redirection symbol
+            {
+        write(1, msg, strlen(msg));
+        return -1;
+    }
+
+    if (flag == 0) {                    //no input file provided
+        write(1, msg2, strlen(msg2));
+        return -1;
+    }
+
+    //attempt file redirection
+    int fd = open(file, O_WRONLY | O_APPEND, S_IRUSR | S_IRGRP | S_IWGRP | S_IWUSR);
+    char * errmsg = "error opening file";
+
+    if (fd < 0) {
+        write(1, errmsg, strlen(errmsg));
+        return -1;
+    } else {
+        dup2(fd, 1); //setting input to the file
+    }
+
+    //close(fd);
+    return fd;
+}
+
+
+
 // int newMethod(){
 
 // 	//todo begin:  check file redirection.  Need to place these commands somewhere else, and maybe refactor code
@@ -52,197 +270,5 @@
 //     //todo test end:
 // }
 
-
-int checkRedirection(char * buf) {
-
-	//todo: get more specific with this. I was thinking either (A) return the count of redirect operators and go from there 
-	//or (B) return a specific flag number that corresponds to different situations
-	//e.g. if (just input redirection) {return 1}, else if (input and output redirect){return 2} etc. etc.
-	//might also be a good idea to use constants e.g. INPUT_AND_OUTPUT = 3
-
-
-    int i = 0;
-    int redirectionOp = 0;
-
-    for (int i = 0; i < strlen(buf); i++){
-    	if (buf[i] == '>' || buf[i] == '<')
-    		return 1;
-    }
-    return 0;
-}
-
-// int isOperator(char * c){
-// 	if (c[0] == '<')
-// 		return 1;
-// 	else if (c[0] == '>'){
-// 		if (c[1] == '>')
-// 			return 2;
-// 		return 1;
-// 	}
-
-// 	return 0;
-// }
-
-
-int redirectionInput(char*argv[]) {
-
-    int i = 0;
-    int count = 0;
-    int flag = 0;
-    char*file;
-    char* msg = "You cannot have more than 1 redirection symbol here\n";
-    char* msg2 = "There needs to be an input file\n";
-
-    while (argv[i] != NULL) {
-
-        if (strcmp(argv[i], "<") == 0) {  //look for the redirection symbol
-            count++;
-            if (argv[i + 1] != NULL) { //check to see if there is text after the redirect
-                flag = 1;
-                file = argv[i + 1];  //copy the name of the file
-            }
-        }
-        i++;
-    }
-
-    if (count == 0)  //no redirection, exit method
-            {
-        return 0;
-    }
-    if (count > 1)   //more than one redirection symbol
-            {
-        write(1, msg, strlen(msg));
-        return -1;
-    }
-    if (flag == 0)  //no input file provided
-            {
-        write(1, msg2, strlen(msg2));
-        return -1;
-    }
-
-    //attempt file redirection
-    int fd = open(file, O_RDONLY);
-    char * errmsg = "error opening file";
-    if (fd < 0) {
-        write(1, errmsg, strlen(errmsg));
-        return -1;
-    } else {
-        dup2(fd, 0); //setting input to the file
-    }
-
-    //close(file);
-    return fd; //success
-
-}
-
-
-int redirectionOutput(char * argv[]) {
-    int i = 0;
-    int count = 0;
-    int flag = 0;
-    char*file;
-    char* msg = "You cannot have more than 1 redirection symbol here\n";
-    char* msg2 = "There needs to be an output file\n";
-
-    while (argv[i] != NULL) {
-
-        if (strcmp(argv[i], ">") == 0) {  //look for the redirection symbol
-            count++;
-
-            if (i > 0) { //check to see if there is text before the redirect
-                flag = 1;
-                file = argv[i - 1];  //copy the name of the file
-            }
-        }
-
-        i++;
-    }
-    if (count == 0)  //no redirection, exit method
-            {
-        return 0;
-    }
-    if (count > 1)   //more than one redirection symbol
-            {
-        write(1, msg, strlen(msg));
-        return -1;
-    }
-    if (flag == 0)  //no input file provided
-            {
-        write(1, msg2, strlen(msg2));
-        return -1;
-    }
-
-    //attempt file redirection
-    int fd = open(file, O_WRONLY | O_TRUNC | O_CREAT,
-    S_IRUSR | S_IRGRP | S_IWGRP | S_IWUSR);
-    char * errmsg = "error opening file";
-
-    if (fd < 0) {
-        write(1, errmsg, strlen(errmsg));
-        return -1;
-    } 
-    else {
-        dup2(fd, 1); //setting input to the file
-    }
-
-    //close(fd);
-    return fd;
-}
-
-
-int redirectionOutputAppend(char * argv[]) {
-
-    int i = 0;
-    int count = 0;
-    int flag = 0;
-    char*file;
-    char* msg = "You cannot have more than 1 redirection symbol here\n";
-    char* msg2 = "There needs to be an output file\n";
-
-    while (argv[i] != NULL) {
-
-        if (strcmp(argv[i], ">>") == 0) {  //look for the redirection symbol
-            count++;
-
-            if (i > 0) { //check to see if there is text before the redirect
-                flag = 1;
-                file = argv[i - 1];  //copy the name of the file
-            }
-        }
-
-        i++;
-    }
-
-    if (count == 0)  //no redirection, exit method
-            {
-        return 0;
-    }
-
-    if (count > 1)   //more than one redirection symbol
-            {
-        write(1, msg, strlen(msg));
-        return -1;
-    }
-
-    if (flag == 0) {                    //no input file provided
-        write(1, msg2, strlen(msg2));
-        return -1;
-    }
-
-    //attempt file redirection
-    int fd = open(file, O_WRONLY | O_APPEND,
-    S_IRUSR | S_IRGRP | S_IWGRP | S_IWUSR);
-    char * errmsg = "error opening file";
-
-    if (fd < 0) {
-        write(1, errmsg, strlen(errmsg));
-        return -1;
-    } else {
-        dup2(fd, 1); //setting input to the file
-    }
-
-    //close(file);
-    return fd;
-}
 
 
