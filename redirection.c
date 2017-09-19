@@ -7,12 +7,6 @@
 
 int checkRedirection(char * buf) {
 
-	//todo: get more specific with this. I was thinking either (A) return the count of redirect operators and go from there 
-	//or (B) return a specific flag number that corresponds to different situations
-	//e.g. if (just input redirection) {return 1}, else if (input and output redirect){return 2} etc. etc.
-	//might also be a good idea to use constants e.g. INPUT_AND_OUTPUT = 3
-
-
     int i = 0;
     int redirectionOp = 0;
 
