@@ -198,5 +198,5 @@ int builtin_command(char **argv) {
     return 0;                         //Not a builtin command
 }
 
-//todo: handle CTRL-D with signal handler, and add header flags as requested in assignment document
+//todo: handle CTRL-D with signal handler
 
