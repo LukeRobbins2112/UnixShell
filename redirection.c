@@ -55,10 +55,9 @@ int redirectionInput(char*argv[]) {
 				}
 				argv[i] = '\0';
 
-			} else {
-#ifndef NO_PROMPT
+			} 
+			else {
 				write(1, msg3, strlen(msg3));
-#endif
 				return -1;
 			}
 		}
@@ -70,17 +69,13 @@ int redirectionInput(char*argv[]) {
 		return 0;
 	}
 	if (count > 1)   //more than one redirection symbol
-			{
-#ifndef NO_PROMPT
+	{
 		write(1, msg, strlen(msg));
-#endif
 		return -1;
 	}
 	if (flag == 0)  //no input file provided
-			{
-#ifndef NO_PROMPT
+	{
 		write(1, msg2, strlen(msg2));
-#endif
 		return -1;
 	}
 
@@ -88,11 +83,10 @@ int redirectionInput(char*argv[]) {
 	int fd = open(file, O_RDONLY);
 	char * errmsg = "error opening file";
 	if (fd < 0) {
-#ifndef NO_PROMPT
 		write(1, errmsg, strlen(errmsg));
-#endif
 		return -1;
-	} else {
+	} 
+	else {
 		dup2(fd, 0); //setting input to the file
 	}
 
@@ -123,10 +117,9 @@ int redirectionOutput(char * argv[]) {
 				}
 				argv[i] = '\0';
 
-			} else {
-#ifndef NO_PROMPT
+			} 
+			else {
 				write(1, msg3, strlen(msg3));
-#endif
 				return -1;
 			}
 		}
@@ -134,21 +127,17 @@ int redirectionOutput(char * argv[]) {
 		i++;
 	}
 	if (count == 0)  //no redirection, exit method
-			{
+	{
 		return 0;
 	}
 	if (count > 1)   //more than one redirection symbol
 			{
-#ifndef NO_PROMPT
 		write(1, msg, strlen(msg));
-#endif
 		return -1;
 	}
 	if (flag == 0)  //no input file provided
-			{
-#ifndef NO_PROMPT
+	{
 		write(1, msg2, strlen(msg2));
-#endif
 		return -1;
 	}
 
@@ -158,11 +147,10 @@ int redirectionOutput(char * argv[]) {
 	char * errmsg = "error opening file";
 
 	if (fd < 0) {
-#ifndef NO_PROMPT
 		write(1, errmsg, strlen(errmsg));
-#endif
 		return -1;
-	} else {
+	} 
+	else {
 		dup2(fd, 1); //sending output to the file
 	}
 
@@ -194,10 +182,9 @@ int redirectionOutputAppend(char * argv[]) {
 				}
 				argv[i] = '\0';
 
-			} else {
-#ifndef NO_PROMPT
+			} 
+			else {
 				write(1, msg3, strlen(msg3));
-#endif
 				return -1;
 			}
 		}
@@ -211,17 +198,13 @@ int redirectionOutputAppend(char * argv[]) {
 	}
 
 	if (count > 1)   //more than one redirection symbol
-			{
-#ifndef NO_PROMPT
+	{
 		write(1, msg, strlen(msg));
-#endif
 		return -1;
 	}
 
 	if (flag == 0) {                    //no input file provided
-#ifndef NO_PROMPT
 		write(1, msg2, strlen(msg2));
-#endif
 		return -1;
 	}
 
@@ -231,11 +214,10 @@ int redirectionOutputAppend(char * argv[]) {
 	char * errmsg = "error opening file";
 
 	if (fd < 0) {
-#ifndef NO_PROMPT
 		write(1, errmsg, strlen(errmsg));
-#endif
 		return -1;
-	} else {
+	} 
+	else {
 		dup2(fd, 1); //setting input to the file
 	}
 
