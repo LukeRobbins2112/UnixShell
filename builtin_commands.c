@@ -13,11 +13,9 @@ int listFiles(char * argument) {
 	DIR* dirPtr = opendir(dirPath);
 
 	if (dirPtr == NULL) {
-#ifndef NO_PROMPT
 		write(2, "Could not open ", 15);
 		write(2, dirPath, sizeof(dirPath));
 		write(2, "\n", 1);
-#endif
 		exit(EXIT_FAILURE);
 	}
 
@@ -29,37 +27,36 @@ int listFiles(char * argument) {
 		snprintf(path, LINE_LEN, "%s/%s", dirPath, entryPtr->d_name);
 		stat(path, &statBuf);
 		if (S_ISREG(statBuf.st_mode)) {
-#ifndef NO_PROMPT
+
 			write(1, "\t", 1);
 			write(1, entryPtr->d_name, strlen(entryPtr->d_name));
 			write(1, "  ", 2);
 			write(1, statBuf.st_size, sizeof(statBuf.st_size));
 			write(1, "\n", 1);
-#endif
+			
 			//printf("%20s\t%u\n",entryPtr->d_name,statBuf.st_size);
 		} else if (S_ISDIR(statBuf.st_mode)) {
-#ifndef NO_PROMPT
+
 			write(1, "\t", 1);
 			write(1, entryPtr->d_name, strlen(entryPtr->d_name));
 			write(1, "  ", 2);
 			write(1, "(dir)\n", 6);
-#endif
+
 
 			//printf("%20s\t(dir)\n",entryPtr->d_name);
 		} else {
-#ifndef NO_PROMPT
+
 			write(1, "\t", 1);
 			write(1, entryPtr->d_name, strlen(entryPtr->d_name));
 			write(1, "  ", 2);
 			write(1, "(other)\n", 8);
-#endif
+
 			//printf("%20s\t(other)\n",entryPtr->d_name);
 		}
 	}
 
-#ifndef NO_PROMPT
 	write(1, "\n", 1);
-#endif
+
 	closedir(dirPtr);
 
 	return (EXIT_SUCCESS);
@@ -74,16 +71,14 @@ void ls() {
 	struct dirent *dirent;
 
 	if (dir == NULL) {
-#ifndef NO_PROMPT
+		
 		write(1, "null", 4);
-#endif
-	} else {
+	} 
+	else {
 		while (dirent = readdir(dir)) {
 			if (dirent->d_name[0] != '.') {            //ignore hidden files
 				char *fname = dirent->d_name;
-#ifndef NO_PROMPT
 				write(1, strcat(fname, "\n"), strlen(dirent->d_name) + 1);
-#endif
 			}
 		}
 	}
@@ -101,9 +96,7 @@ void cd(char** tokens) {
 
 	char * first = tokens[1];
 	if (first == NULL) {
-#ifndef NO_PROMPT
 		write(1, noInputMsg, strlen(noInputMsg));
-#endif
 		return;
 	}
 
@@ -115,10 +108,9 @@ void cd(char** tokens) {
 		return;
 	}
 	if (chdir(first) != 0) {
-#ifndef NO_PROMPT
 		write(1, noDirMsg, strlen(noDirMsg));
-#endif
-	} else {
+	} 
+	else {
 		chdir(first);
 	}
 }
@@ -134,14 +126,11 @@ void cat(char** tokens) {
 	char content[fileLength];
 
 	if (fd < 0) {
-#ifndef NO_PROMPT
 		write(1, "error", 5);
-#endif
-	} else {
+	} 
+	else {
 		bytes = read(fd, content, fileLength);
-#ifndef NO_PROMPT
 		write(1, content, bytes);
-#endif
 	}
 
 	close(fd);
