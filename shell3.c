@@ -29,9 +29,7 @@ char* getInput(char input[]) {
     char *msg = strcat(cwd, ind);
     close(dPtr);
 
-#ifndef NO_PROMPT
     write(1, msg, strlen(msg));
-#endif
 
     memset(input, 0, sizeof(input));  //clearing buffer of input
     int in = read(0, input, MAXLINE);
@@ -68,9 +66,7 @@ void eval(char *cmdline) {
             argv[0][strcspn(argv[0], "\n")] = 0; //remove trailing new line from 1st argument
 
             if (execve(argv[0], argv, 0) < 0) {
-#ifndef NO_PROMPT
                 write(1, "Command not found.\n", 20);
-#endif
                 exit(0);
             }
 
@@ -79,18 +75,16 @@ void eval(char *cmdline) {
         // Parent waits for foreground job to terminate
         if (!background) {
             int status;
-            if (waitpid(pid, &status, 0) < 0) {
-#ifndef NO_PROMPT
+            if (waitpid(pid, &status, 0) < 0) 
+            {
                 write(1, "waitfg: waitpid error\n", 22);
-#endif
-
             }
-        } else {
-#ifndef NO_PROMPT
+        } 
+     
+     else {
             write(1, pid, sizeof(pid));
             write(1, " ", 1);
             write(1, cmdline, strlen(cmdline));
-#endif
         }
 
         for (int i = 0; i < 3; i++) {
@@ -165,9 +159,8 @@ int parseline(char *buf, char **argv) {
 //Ignores other command line arguments
 int builtin_command(char **argv) {
     if (strcmp(argv[0], "exit") == 0) {
-#ifndef NO_PROMPT
+
         write(1, "bye\n", 4);
-#endif
         exit(0);
     }
     if (strcmp(argv[0], "ln") == 0) {
